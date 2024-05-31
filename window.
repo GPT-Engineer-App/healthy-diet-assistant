@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Diet Plan</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+      }
+      .filter-container {
+        margin-bottom: 20px;
+      }
+      .filter-container label {
+        margin-right: 10px;
+      }
+      .diet-plan {
+        border-collapse: collapse;
+        width: 100%;
+      }
+      .diet-plan th,
+      .diet-plan td {
+        border: 1px solid #ddd;
+        padding: 8px;
+      }
+      .diet-plan th {
+        background-color: #f2f2f2;
+      }
+      .reset-button {
+        margin-top: 10px;
+        color: white;
+        background-color: red;
+        border: none;
+        padding: 10px;
+        cursor: pointer;
+      }
+      .report-container {
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Diet Plan</h1>
+    <div class="filter-container">
+      <label for="protein">Protein (g):</label>
+      <input type="number" id="protein" name="protein" />
+      <label for="fat">Fat (g):</label>
+      <input type="number" id="fat" name="fat" />
+      <label for="calories">Calories:</label>
+      <input type="number" id="calories" name="calories" />
+      <label for="carbs">Carbohydrates (g):</label>
+      <input type="number" id="carbs" name="carbs" />
+      <label for="veg">Veg/Non-Veg:</label>
+      <select id="veg" name="veg">
+        <option value="">All</option>
+        <option value="Veg">Veg</option>
+        <option value="Non-Veg">Non-Veg</option>
+      </select>
+      <label for="disease">Suitable for Diseases:</label>
+      <select id="disease" name="disease">
+        <option value="">All</option>
+        <option value="Diabetes">Diabetes</option>
+        <option value="Hypertension">Hypertension</option>
+        <option value="Heart Disease">Heart Disease</option>
+      </select>
+      <label for="region">Region of Origin:</label>
+      <select id="region" name="region">
+        <option value="">All</option>
+        <option value="North">North</option>
+        <option value="South">South</option>
+        <option value="East">East</option>
+        <option value="West">West</option>
+      </select>
+      <button onclick="filterDietPlan()">Filter</button>
+      <button class="reset-button" onclick="resetFilters()">Reset</button>
+    </div>
+
+    <div id="diet-sections">
+      <!-- Sections will be populated here by JavaScript -->
+    </div>
+
+    <div class="report-container">
+      <h2>Combined Report</h2>
+      <button onclick="combineReports()">Combine Reports</button>
+      <div id="combined-report"></div>
+    </div>
+
+    <script>
+      const dietData = [
+        { name: "Oatmeal", veg: "Veg", protein: 5, carbs: 27, calories: 150, fat: 3, region: "North", quantity: "1 bowl", diseases: "Diabetes" },
+        { name: "Chicken Salad", veg: "Non-Veg", protein: 20, carbs: 5, calories: 200, fat: 10, region: "West", quantity: "1 plate", diseases: "Heart Disease" },
+        // Add more diet data here
+      ];
+
+      const sections = ["After Wake Up", "Breakfast", "Before Lunch", "Lunch", "Afternoon Snacks", "Before Dinner", "Dinner", "After Dinner"];
+
+      function createSection(section) {
+        const sectionDiv = document.createElement("div");
+        sectionDiv.classList.add("section");
+        sectionDiv.innerHTML = `
+                <h2>${section}</h2>
+                <table class="diet-plan">
+                    <thead>
+                        <tr>
+                            <th>Select</th>
+                            <th>Dish Name</th>
+                            <th>Veg/Non-Veg</th>
+                            <th>Protein (g)</th>
+                            <th>Carbohydrates (g)</th>
+                            <th>Calories</th>
+                            <th>Fat (g)</th>
+                            <th>Region of Origin</th>
+                            <th>Quantity</th>
+                            <th>Suitable for Diseases</th>
+                        </tr>
+                    </thead>
+                    <tbody id="${section.toLowerCase().replace(/ /g, "-")}-body">
+                        <!-- Rows will be populated here by JavaScript -->
+                    </tbody>
+                </table>
+                <div class="report-container">
+                    <h2>${section} Report</h2>
+                    <div id="${section.toLowerCase().replace(/ /g, "-")}-report"></div>
+                </div>
+            `;
+        document.getElementById("diet-sections").appendChild(sectionDiv);
+      }
+
+      sections.forEach((section) => createSection(section));
+
+      function displayDietPlan() {
+        sections.forEach((section) => {
+          const tbody = document.getElementById(`${section.toLowerCase().replace(/ /g, "-")}-body`);
+          tbody.innerHTML = "";
+          dietData.forEach((dish) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                        <td><input type="checkbox" onchange="updateReport('${section}', this, '${dish.name}')"></td>
+                        <td>${dish.name}</td>
+                        <td>${dish.veg}</td>
+                        <td>${dish.protein}</td>
+                        <td>${dish.carbs}</td>
+                        <td>${dish.calories}</td>
+                        <td>${dish.fat}</td>
+                        <td>${dish.region}</td>
+                        <td>${dish.quantity}</td>
+                        <td>${dish.diseases}</td>
+                    `;
+            tbody.appendChild(row);
+          });
+        });
+      }
+
+      function filterDietPlan() {
+        const protein = document.getElementById("protein").value;
+        const fat = document.getElementById("fat").value;
+        const calories = document.getElementById("calories").value;
+        const carbs = document.getElementById("carbs").value;
+        const veg = document.getElementById("veg").value;
+        const disease = document.getElementById("disease").value;
+        const region = document.getElementById("region").value;
+
+        sections.forEach((section) => {
+          const tbody = document.getElementById(`${section.toLowerCase().replace(/ /g, "-")}-body`);
+          tbody.innerHTML = "";
+          dietData.forEach((dish) => {
+            if ((protein === "" || dish.protein >= protein) && (fat === "" || dish.fat <= fat) && (calories === "" || dish.calories <= calories) && (carbs === "" || dish.carbs <= carbs) && (veg === "" || dish.veg === veg) && (disease === "" || dish.diseases.includes(disease)) && (region === "" || dish.region === region)) {
+              const row = document.createElement("tr");
+              row.innerHTML = `
+                            <td><input type="checkbox" onchange="updateReport('${section}', this, '${dish.name}')"></td>
+                            <td>${dish.name}</td>
+                            <td>${dish.veg}</td>
+                            <td>${dish.protein}</td>
+                            <td>${dish.carbs}</td>
+                            <td>${dish.calories}</td>
+                            <td>${dish.fat}</td>
+                            <td>${dish.region}</td>
+                            <td>${dish.quantity}</td>
+                            <td>${dish.diseases}</td>
+                        `;
+              tbody.appendChild(row);
+            }
+          });
+        });
+      }
+
+      function resetFilters() {
+        document.getElementById("protein").value = "";
+        document.getElementById("fat").value = "";
+        document.getElementById("calories").value = "";
+        document.getElementById("carbs").value = "";
+        document.getElementById("veg").value = "";
+        document.getElementById("disease").value = "";
+        document.getElementById("region").value = "";
+        displayDietPlan();
+      }
+
+      function updateReport(section, checkbox, dishName) {
+        const reportDiv = document.getElementById(`${section.toLowerCase().replace(/ /g, "-")}-report`);
+        if (checkbox.checked) {
+          const dishDiv = document.createElement("div");
+          dishDiv.id = `${section.toLowerCase().replace(/ /g, "-")}-${dishName}`;
+          dishDiv.textContent = dishName;
+          reportDiv.appendChild(dishDiv);
+        } else {
+          const dishDiv = document.getElementById(`${section.toLowerCase().replace(/ /g, "-")}-${dishName}`);
+          if (dishDiv) {
+            reportDiv.removeChild(dishDiv);
+          }
+        }
+      }
+
+      function combineReports() {
+        const combinedReportDiv = document.getElementById("combined-report");
+        combinedReportDiv.innerHTML = "";
+        sections.forEach((section) => {
+          const reportDiv = document.getElementById(`${section.toLowerCase().replace(/ /g, "-")}-report`);
+          const sectionReport = document.createElement("div");
+          sectionReport.innerHTML = `<h3>${section}</h3>`;
+          sectionReport.appendChild(reportDiv.cloneNode(true));
+          combinedReportDiv.appendChild(sectionReport);
+        });
+        window.open("", "Combined Report", "width=600,height=400").document.write(combinedReportDiv.innerHTML);
+      }
+
+      displayDietPlan();
+    </script>
+  </body>
+</html>
